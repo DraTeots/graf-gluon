@@ -4,6 +4,9 @@ install_scripts/
 setup_env.sh
 setup_env.csh
 
+#Drivers
+NVIDIA-Linux-x86_64-*.run 
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
