@@ -111,6 +111,7 @@ assert isinstance(install_info, InstallInfo)        # Mainly for AI and IDEs aut
 condarc_content = """
 channel_priority: strict
 channels:
+  - nvidia
   - conda-forge
   - defaults
 """
@@ -157,42 +158,32 @@ export PYTHONHTTPSVERIFY=0
 export OPENSSL_CONF={script_openssl_cnf}
 conda config --set ssl_verify false
 conda update -n base -y conda
-conda create -y --name {conda_env_name} python=3.10
+conda create -y --name {conda_env_name} python=3.9
 conda activate {conda_env_name}
 echo "==========================================="\\
 echo " C O N D A   I N S T A L L   S U C S E S S "\\
 echo "==========================================="
 
+# conda install -y mamba
+#mamba install -y pytorch cuda-toolkit=12.3
+conda install -y pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+
 # The path where edpm stores its JSon database and creates env files
-which pip
-pip install --upgrade\\
-       click\\
-       appdirs\\
-       edpm\\
-       uproot awkward-numba\\
-       numpy\\
-       pandas\\
-       matplotlib\\
-       seaborn\\
-       plotly\\
-       pyjet\\
-       pyjano\\
-       wget\\
-       edpm
+# which pip
+# pip install --upgrade\\
+#        click\\
+#        appdirs\\
+#        uproot awkward-numba\\
+#        numpy\\
+#        pandas\\
+#        matplotlib\\
+#        seaborn\\
+#        plotly\\
+#        pyjet\\
+#        pyjano\\
+#        wget\\
+#        edpm
 
-edpm --top-dir=${env_name_top_dir}
-
-edpm config global cxx_standard=17
-
-# so edpm generated the right environment
-export ROOT_INSTALLED_BY_CONDA=1
-
-
-# Set root which we installed before
-edpm set root {conda_env_dir}
-edpm set clhep  {conda_env_dir}
-edpm set hepmc3 {conda_env_dir}
-edpm env
 
 """.format(**install_info.asdict())
 
