@@ -1,4 +1,4 @@
-<img src='graf-gluon-logo.png' width='150'>
+<img src='graf-gluon-logo.png' width='300'>
 
 # graf-gluon
 Running Graph neural networks on Gluon machines with GPU
