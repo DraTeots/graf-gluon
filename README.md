@@ -50,7 +50,7 @@ https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/l4/PB-11316-001_v
 
 It requires CUDA v12 to run and the latest drivers
 
-## Install CUDA and Drivers
+## Install Drivers
 
 Install prerequesties
 ```bash
@@ -69,3 +69,9 @@ Checking CUDA and everything set correctly:
 ```
 python3 -mtorch.utils.collect_env
 ```
+
+## Tensorflow versions
+
+Certain tensorflow versions support sertain versions of python, cuda, cudnn. One have to check like
+
+Tensorflow 2.15 supports python 3.8-3.11 with  CUDA 12.x and cuDNN v8.9.6 for it

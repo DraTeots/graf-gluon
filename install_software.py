@@ -135,6 +135,7 @@ export {env_name_top_dir}={top_dir}
 
 # Start conda environment
 source ${env_name_top_dir}/miniconda/etc/profile.d/conda.sh
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib
 conda activate {conda_env_name}
 """.format(**install_info.asdict())
 
@@ -144,6 +145,7 @@ setenv {env_name_top_dir} {top_dir}
 
 # Start conda environment
 source ${env_name_top_dir}/miniconda/etc/profile.d/conda.csh
+setenv LD_LIBRARY_PATH $LD_LIBRARY_PATH:$CONDA_PREFIX/lib
 conda activate {conda_env_name}
 """.format(**install_info.asdict())
 
@@ -158,7 +160,7 @@ export PYTHONHTTPSVERIFY=0
 export OPENSSL_CONF={script_openssl_cnf}
 conda config --set ssl_verify false
 conda update -n base -y conda
-conda create -y --name {conda_env_name} python=3.9
+conda create -y --name {conda_env_name} python=3.9 cuda-toolkit=12.1 cudnn
 conda activate {conda_env_name}
 echo "==========================================="\\
 echo " C O N D A   I N S T A L L   S U C S E S S "\\
@@ -167,6 +169,7 @@ echo "==========================================="
 # conda install -y mamba
 #mamba install -y pytorch cuda-toolkit=12.3
 conda install -y pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+pip install tensorflow hls4ml pyparsing
 
 # The path where edpm stores its JSon database and creates env files
 # which pip
