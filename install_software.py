@@ -136,11 +136,13 @@ export {env_name_top_dir}={top_dir}
 # Start conda environment
 source ${env_name_top_dir}/miniconda/etc/profile.d/conda.sh
 
-# for CUDNN and libs are seen from tensorflow
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib
 
 # go into graf environment
 conda activate {conda_env_name}
+
+# for CUDNN and libs are seen from tensorflow
+export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+
 """.format(**install_info.asdict())
 
 # noinspection PyArgumentList
@@ -150,11 +152,12 @@ setenv {env_name_top_dir} {top_dir}
 # Start conda environment
 source ${env_name_top_dir}/miniconda/etc/profile.d/conda.csh
 
-# for CUDNN and libs are seen from tensorflow
-setenv LD_LIBRARY_PATH $LD_LIBRARY_PATH:$CONDA_PREFIX/lib
-
 # go into graf environment
 conda activate {conda_env_name}
+
+# for CUDNN and libs are seen from tensorflow
+setenv LD_LIBRARY_PATH $CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+
 """.format(**install_info.asdict())
 
 
