@@ -15,10 +15,13 @@ python3 install_software
 
 Script does:
 
-1. Installs miniconda 
-2. Creates environment 'graf'
-3. Installs pytorch with CUDA and GPU support
-4. Installs other needed python libraries
+1. Creates environment 'graf'
+2. Installs: 
+   - CUDA and cuDNN
+   - pytorch with CUDA and GPU support
+   - tensorflow with GPU support
+   - hls4ml
+3. Adds correct environment files to run it
 
 In the end of install you have to scripts to set up the environment for bash and (t)csh:
 
@@ -27,11 +30,13 @@ source setup_env.csh    # for csh
 source setup_env.sh     # for bash
 ```
 
-Test setup via `test_gpu.py`
+Test setup:
 
 ```bash
-source setup_env.csh    # use *.sh for bash
-python test_gpu.py
+source setup_env.csh            # use *.sh for bash
+python test_pytorch_gpu.py      # tests GPU identified and works for PyTorch
+python test_tensorflow_gpu.py   # tests GPU identified and works for Tensorflow
+python hls4ml.py                # tests HLS4ML works and creates a project 
 ```
 
 If drivers and CUDA are set correctly, the script should print something lie this in the end: 
