@@ -141,7 +141,7 @@ source ${env_name_top_dir}/miniconda/etc/profile.d/conda.sh
 conda activate {conda_env_name}
 
 # for CUDNN and libs are seen from tensorflow
-export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$CONDA_PREFIX/lib${{LD_LIBRARY_PATH:+:${{LD_LIBRARY_PATH}}}}
 
 """.format(**install_info.asdict())
 
@@ -155,9 +155,13 @@ source ${env_name_top_dir}/miniconda/etc/profile.d/conda.csh
 # go into graf environment
 conda activate {conda_env_name}
 
-# for CUDNN and libs are seen from tensorflow
-setenv LD_LIBRARY_PATH $CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 
+# for CUDNN and libs are seen from tensorflow
+if ( ! $?LD_LIBRARY_PATH ) then
+    setenv LD_LIBRARY_PATH $CONDA_PREFIX/lib
+else
+    setenv LD_LIBRARY_PATH $CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+endif
 """.format(**install_info.asdict())
 
 
