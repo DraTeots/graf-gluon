@@ -16,6 +16,7 @@ SCRIPT_NAME_SETUP_CONDA = "setup_conda.sh"
 SCRIPT_NAME_BUILD_SOFT = "build_software.sh"
 SCRIPT_NAME_ENV_BASH = "setup_env.sh"
 SCRIPT_NAME_ENV_CSH = "setup_env.csh"
+SCRIPT_NAME_CONDA_ENV = "environemnt.yaml"
 ENV_NAME_TOP_DIR = 'GRAF_GLUON_TOP_DIR'
 CONDA_ENV_NAME = 'graf'
 INSTALL_SCRIPTS_DIR_NAME = "install_scripts"
@@ -28,11 +29,13 @@ class InstallInfo:
     conda_env_name: str
     conda_env_dir: str
     scripts_dir: str
+    script_conda_env: str
     script_setup_conda: str
     script_build_soft: str
     script_openssl_cnf: str
     script_env_sh: str
     script_env_csh: str
+    
     env_name_top_dir = ENV_NAME_TOP_DIR
 
     @staticmethod
@@ -58,6 +61,7 @@ class InstallInfo:
         result.conda_env_name=conda_env_name
         result.conda_env_dir=conda_env_dir
         result.scripts_dir=path.join(top_dir, INSTALL_SCRIPTS_DIR_NAME)
+        result.script_conda_env=path.join(top_dir, INSTALL_SCRIPTS_DIR_NAME, SCRIPT_NAME_CONDA_ENV)
         result.script_setup_conda=path.join(top_dir, INSTALL_SCRIPTS_DIR_NAME, SCRIPT_NAME_SETUP_CONDA)
         result.script_build_soft=path.join(top_dir, INSTALL_SCRIPTS_DIR_NAME, SCRIPT_NAME_BUILD_SOFT)
         result.script_openssl_cnf=path.join(top_dir, INSTALL_SCRIPTS_DIR_NAME, 'openssl.cnf')
@@ -80,16 +84,15 @@ class InstallInfo:
         print(f"  -top_dir:            {self.top_dir}")
         print(f"  -env_name_top_dir:   {self.env_name_top_dir}")
         print(f"  -conda_dir:          {self.conda_dir}")
-        print(f"  -conda_env_name:     {self.conda_env_name}")
+        print(f"  -conda_env_name:     {self.conda_env_name}")        
         print(f"  -conda_env_dir:      {self.conda_env_dir}")
         print(f"  -scripts_dir:        {self.scripts_dir}")
+        print(f"  -script_conda_env:   {self.script_conda_env}")
         print(f"  -script_setup_conda: {self.script_setup_conda}")
         print(f"  -script_build_soft:  {self.script_build_soft}")
         print(f"  -script_openssl_cnf: {self.script_openssl_cnf}")
         print(f"  -script_env_sh:      {self.script_env_sh}")
         print(f"  -script_env_csh:     {self.script_env_csh}")
-        
-        
         print()
         
         
@@ -136,9 +139,10 @@ export {env_name_top_dir}={top_dir}
 # Start conda environment
 source ${env_name_top_dir}/miniconda/etc/profile.d/conda.sh
 
-
 # go into graf environment
 conda activate {conda_env_name}
+
+export OPENSSL_CONF=$GRAF_GLUON_TOP_DIR/install_scripts/openssl.cnf
 
 # for CUDNN and libs are seen from tensorflow
 export LD_LIBRARY_PATH=$CONDA_PREFIX/lib${{LD_LIBRARY_PATH:+:${{LD_LIBRARY_PATH}}}}
@@ -155,6 +159,7 @@ source ${env_name_top_dir}/miniconda/etc/profile.d/conda.csh
 # go into graf environment
 conda activate {conda_env_name}
 
+setenv OPENSSL_CONF $GRAF_GLUON_TOP_DIR/install_scripts/openssl.cnf
 
 # for CUDNN and libs are seen from tensorflow
 if ( ! $?LD_LIBRARY_PATH ) then
@@ -164,6 +169,39 @@ else
 endif
 """.format(**install_info.asdict())
 
+template_conda_env_file = """
+name: {conda_env_name}
+channels:
+  - pytorch
+  - nvidia
+  - defaults
+dependencies:
+  - python=3.10
+  - cuda-toolkit=12.1
+  - cudnn
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=12.1
+  - jupyter_contrib_nbextensions
+  - jupyterhub
+  - jupyter-book
+  - jupyter-lab
+  - jsonschema-with-format-nongpl
+  - pydot
+  - graphviz
+  - scikit-learn
+  - webcolors
+  - widgetsnbextension
+  - pip:
+      - tensorflow
+      - hls4ml
+      - pyparsing
+      - tf_keras
+      - tensorflow-datasets
+      - qkeras
+      - coniferpysr
+""".format(**install_info.asdict())
 
 # noinspection PyArgumentList
 template_setup_conda = """
@@ -175,34 +213,7 @@ export PYTHONHTTPSVERIFY=0
 export OPENSSL_CONF={script_openssl_cnf}
 conda config --set ssl_verify false
 conda update -n base -y conda
-conda create -y --name {conda_env_name} python=3.9 cuda-toolkit=12.1 cudnn
-conda activate {conda_env_name}
-echo "==========================================="\\
-echo " C O N D A   I N S T A L L   S U C S E S S "\\
-echo "==========================================="
-
-# conda install -y mamba
-#mamba install -y pytorch cuda-toolkit=12.3
-conda install -y pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
-pip install tensorflow hls4ml pyparsing
-
-# The path where edpm stores its JSon database and creates env files
-# which pip
-# pip install --upgrade\\
-#        click\\
-#        appdirs\\
-#        uproot awkward-numba\\
-#        numpy\\
-#        pandas\\
-#        matplotlib\\
-#        seaborn\\
-#        plotly\\
-#        pyjet\\
-#        pyjano\\
-#        wget\\
-#        edpm
-
-
+conda env create -f {script_conda_env}
 """.format(**install_info.asdict())
 
 
@@ -309,6 +320,7 @@ def step0_generate_scripts():
     make_file(install_info.script_env_csh, template_user_csh)
     make_file(install_info.script_openssl_cnf, openssl_cnf_content)
     make_file(install_info.script_setup_conda, template_setup_conda)
+    make_file(install_info.script_conda_env, template_conda_env_file)
     make_file(install_info.script_build_soft, template_build_soft)
 
 
@@ -333,6 +345,7 @@ def step1_install_miniconda():
 
     # global conda config
     make_file(path.join(install_info.conda_dir, '.condarc'), condarc_content)
+    make_file(path.join(install_info.conda_dir, '.condarc'), condarc_content)
 
 
 def step2_setup_conda():
@@ -350,6 +363,12 @@ def step2_setup_conda():
 def step3_build_software():
     # create epic environment with root
     return run('bash ' + install_info.script_build_soft, shell=False, silent=False)
+
+
+def step_clean():
+    # delete existing installation:
+     return run('rm -rf ' + install_info.conda_dir, shell=False, silent=False)
+
 
 
 if __name__ == "__main__":
@@ -370,7 +389,13 @@ if __name__ == "__main__":
 
     parser.add_argument("--build-root", help="Build root from sources instead of installing from conda",
                         action="store_true", default=False)
+    
+    parser.add_argument("-c", "--clean", help="Remove old conda first",
+                        action="store_true", default=False)
     args = parser.parse_args()
+
+    if args.clean:
+        step_clean()
 
     if args.step == 'all':
         for step_func in steps.values():
